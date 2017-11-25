@@ -101,7 +101,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Extract bounding boxes')
 
   parser.add_argument('--mode', type=str, default='box',
-                      help='Mode box for a single box and mode hands for 2 boxes')
+                      help='Mode. Box for image extraction and clean for cleaning.')
   parser.add_argument('--video', type=str, default='aada/1',
                       help='Name of the video, without the extension')
   parser.add_argument('--resize', type=int, default=0,
@@ -192,19 +192,10 @@ if __name__ == '__main__':
 
   print (min_x, max_x, min_center_x, max_center_x)
 
-  if mode == 'hands':
-    show_left_box, show_right_box = True, False
-    left_box = Box((0, 255, 0), 100, 100, 50, img.shape, 'l' + args.video)
-    modified_img = img.copy()
-    left_box.display(modified_img)
-    cv2.imshow('img', modified_img)
-    selected_box = left_box
-    right_box = Box((0, 0, 255), 500, 500, 50, img.shape, 'r' + args.video)
-  else:
-    selected_box = Box((0, 255, 0), 200, 200, 200, img.shape, args.video)
-    modified_img = img.copy()
-    selected_box.display(modified_img)
-    cv2.imshow('img', modified_img)
+  selected_box = Box((0, 255, 0), 200, 200, 200, img.shape, args.video)
+  modified_img = img.copy()
+  selected_box.display(modified_img)
+  cv2.imshow('img', modified_img)
   
   while video_capture.isOpened():
     key = cv2.waitKey() & 0xff
@@ -246,28 +237,9 @@ if __name__ == '__main__':
       crop_box.save(img, file_name)
 
     selected_box.handle_key(key, img)
-    if mode == 'hands':
-      if key == 113: # q: toggle left hand bounding box
-        show_left_box = not show_left_box
-      elif key == 119: # w: toggle right hand bounding box
-        show_right_box = not show_right_box
-      elif key == 49: # '1' key: select left box
-        show_left_box = True
-        selected_box = left_box
-      elif key == 50: # '2' key: select right box
-        show_right_box = True
-        selected_box = right_box
 
     modified_img = img.copy()
-    
-    if mode == 'hands':
-      if show_left_box:
-        left_box.display(modified_img)
-      if show_right_box:
-        right_box.display(modified_img)
-    else:
-      selected_box.display(modified_img)
-
+    selected_box.display(modified_img)
     cv2.imshow('img', modified_img)
 
   print('Exiting...')
