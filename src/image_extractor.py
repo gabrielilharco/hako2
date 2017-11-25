@@ -197,6 +197,9 @@ if __name__ == '__main__':
   selected_box.display(modified_img)
   cv2.imshow('img', modified_img)
   
+  # Haar cascade for face detection
+  face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
   while video_capture.isOpened():
     key = cv2.waitKey() & 0xff
     if key == 27: # Esc: exit
@@ -211,7 +214,18 @@ if __name__ == '__main__':
         break
       if img.shape[1] != settings.resizedWidth:
         img = resize(img)    
-    
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    for (x,y,w,h) in faces:
+        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = img[y:y+h, x:x+w]
+        eyes = eye_cascade.detectMultiScale(roi_gray)
+        for (ex,ey,ew,eh) in eyes:
+            cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+    cv2.imshow('img',img)
+
     if key == 114: # crop random
       x = random.randint(min_center_x+1, max_center_x)
       y = random.randint(min_center_y+1, max_center_y)
@@ -240,7 +254,7 @@ if __name__ == '__main__':
 
     modified_img = img.copy()
     selected_box.display(modified_img)
-    cv2.imshow('img', modified_img)
+    #cv2.imshow('img', modified_img)
 
   print('Exiting...')
   video_capture.release()
