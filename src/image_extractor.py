@@ -7,7 +7,9 @@ import uuid
 import random
 
 src_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(os.path.dirname(src_dir), 'data')
+root_dir = os.path.dirname(src_dir)
+data_dir = os.path.join(root_dir, 'data')
+models_dir = os.path.join(root_dir, 'models')
 
 class Box:
   def __init__(self, color, x, y, half_size, img_shape, name):
@@ -190,17 +192,27 @@ if __name__ == '__main__':
   max_y = t - offset - 1
   min_y = offset + 1
 
-  print (min_x, max_x, min_center_x, max_center_x)
-
   selected_box = Box((0, 255, 0), 200, 200, 200, img.shape, args.video)
   modified_img = img.copy()
   selected_box.display(modified_img)
   cv2.imshow('img', modified_img)
   
   # Haar cascade for face detection
-  face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+  haar_cascade_file = os.path.join(models_dir, 'haarcascade_frontalface.xml')
+  print(haar_cascade_file)
+  face_cascade = cv2.CascadeClassifier(haar_cascade_file)
 
   while video_capture.isOpened():
+    # Detect faces
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray,
+      scaleFactor = settings.cascadeScaleFactor,
+      minNeighbors = settings.cascadeMinNeighbors)
+    
+    for (x,y,w,h) in faces:
+        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+    cv2.imshow('img',img)
+
     key = cv2.waitKey() & 0xff
     if key == 27: # Esc: exit
       break
@@ -215,17 +227,6 @@ if __name__ == '__main__':
       if img.shape[1] != settings.resizedWidth:
         img = resize(img)    
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in faces:
-        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = img[y:y+h, x:x+w]
-        eyes = eye_cascade.detectMultiScale(roi_gray)
-        for (ex,ey,ew,eh) in eyes:
-            cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
-    cv2.imshow('img',img)
-
     if key == 114: # crop random
       x = random.randint(min_center_x+1, max_center_x)
       y = random.randint(min_center_y+1, max_center_y)
@@ -238,11 +239,7 @@ if __name__ == '__main__':
       max_w = min(y, t-y)
       max_hw = min(max_h, max_w)
 
-      print(min_hw, max_hw)
       crop_sz = random.randint(min_hw, max_hw)
-
-      print(x, y, crop_sz)
-
       crop_box = Box((255, 0, 0), x, y, crop_sz, img.shape, args.video)
       file_name = os.path.join( 
         data_dir,
