@@ -103,7 +103,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Extract bounding boxes')
 
   parser.add_argument('--mode', type=str, default='box',
-                      help='Mode. Box for image extraction and clean for cleaning.')
+                      help='Mode. "box" for image extraction, "clean" for cleaning, "cut" for cutting.')
   parser.add_argument('--video', type=str, default='aada/1',
                       help='Name of the video, without the extension')
   parser.add_argument('--resize', type=int, default=0,
@@ -181,6 +181,9 @@ if __name__ == '__main__':
     img = resize(img)
   height, width, _ = img.shape
 
+  img_buffer = [img]
+  current_frame = 0
+
   t = img.shape[1]
   center_window_size = 0.15*t
   max_center_x = int(t/2 + center_window_size/2)
@@ -205,6 +208,9 @@ if __name__ == '__main__':
   minFaceSize = (int(width*settings.minFaceSize), int(width*settings.minFaceSize))
   maxFaceSize = (int(width*settings.maxFaceSize), int(width*settings.maxFaceSize))
 
+  start_of_cut = -1
+  end_of_cut = -1
+
   while video_capture.isOpened():
     # Detect faces
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -221,18 +227,27 @@ if __name__ == '__main__':
     key = cv2.waitKey() & 0xff
     if key == 27: # Esc: exit
       break
-    if key == 32: # space: go to next frame
-      ret, img = video_capture.read()
-      # rotate image if necessary
-      if rotate:
-        img = cv2.transpose(img)
-        img = cv2.flip(img, 1)
-      if img is None: # video ended
-        break
-      if img.shape[1] != settings.resizedWidth:
-        img = resize(img)    
+    elif key == 32: # space: go to next frame
+      current_frame += 1
+      if current_frame == len(img_buffer):
+        ret, img = video_capture.read()
+        # rotate image if necessary
+        if rotate:
+          img = cv2.transpose(img)
+          img = cv2.flip(img, 1)
+        if img is None: # video ended
+          break
+        if img.shape[1] != settings.resizedWidth:
+          img = resize(img)
+        img_buffer.append(img)
+      else:
+        img = img_buffer[current_frame]
+    elif key == 8: # Backspace: go to previous frame
+      if current_frame > 0:
+        current_frame -= 1
+        img = img_buffer[current_frame]
 
-    if key == 114: # crop random
+    elif key == 114: # crop random
       x = random.randint(min_center_x+1, max_center_x)
       y = random.randint(min_center_y+1, max_center_y)
       
@@ -251,6 +266,12 @@ if __name__ == '__main__':
         'crops',
         uuid.uuid4().hex + '.png')
       crop_box.save(img, file_name)
+
+    if mode == 'cut':
+      if key == 49: # 1: start of cut
+        start_of_cut = current_frame
+      elif key == 51: # 2: set end of cut
+        end_of_cut = current_frame
 
     selected_box.handle_key(key, img)
 
