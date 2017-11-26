@@ -203,13 +203,14 @@ if __name__ == '__main__':
   
   # Haar cascade for face detection
   haar_cascade_file = os.path.join(models_dir, 'haarcascade_frontalface.xml')
-  print(haar_cascade_file)
   face_cascade = cv2.CascadeClassifier(haar_cascade_file)
   minFaceSize = (int(width*settings.minFaceSize), int(width*settings.minFaceSize))
   maxFaceSize = (int(width*settings.maxFaceSize), int(width*settings.maxFaceSize))
 
-  start_of_cut = -1
-  end_of_cut = -1
+  if mode == 'cut':
+    start_of_cut = -1
+    end_of_cut = -1
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
 
   while video_capture.isOpened():
     # Detect faces
