@@ -179,6 +179,7 @@ if __name__ == '__main__':
     img = cv2.flip(img, 1)
   if img.shape[1] != settings.resizedWidth:
     img = resize(img)
+  height, width, _ = img.shape
 
   t = img.shape[1]
   center_window_size = 0.15*t
@@ -201,13 +202,17 @@ if __name__ == '__main__':
   haar_cascade_file = os.path.join(models_dir, 'haarcascade_frontalface.xml')
   print(haar_cascade_file)
   face_cascade = cv2.CascadeClassifier(haar_cascade_file)
+  minFaceSize = (int(width*settings.minFaceSize), int(width*settings.minFaceSize))
+  maxFaceSize = (int(width*settings.maxFaceSize), int(width*settings.maxFaceSize))
 
   while video_capture.isOpened():
     # Detect faces
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray,
       scaleFactor = settings.cascadeScaleFactor,
-      minNeighbors = settings.cascadeMinNeighbors)
+      minNeighbors = settings.cascadeMinNeighbors,
+      minSize = minFaceSize,
+      maxSize = maxFaceSize)
     
     for (x,y,w,h) in faces:
         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
