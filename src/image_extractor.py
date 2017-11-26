@@ -208,7 +208,7 @@ if __name__ == '__main__':
   maxFaceSize = (int(width*settings.maxFaceSize), int(width*settings.maxFaceSize))
 
   if mode == 'cut':
-    start_of_cut = -1
+    start_of_cut = 0
     end_of_cut = -1
     fps = video_capture.get(cv2.CAP_PROP_FPS)
 
@@ -271,14 +271,35 @@ if __name__ == '__main__':
     if mode == 'cut':
       if key == 49: # 1: start of cut
         start_of_cut = current_frame
+        print("Cut start set to %.2f" % (start_of_cut/fps))
       elif key == 51: # 2: set end of cut
-        end_of_cut = current_frame
+        if current_frame <= start_of_cut:
+          print("Error: cannot end cut before start.")
+        else:
+          end_of_cut = current_frame
+          print("Cut end set to %.2f" % (end_of_cut/fps))
 
     selected_box.handle_key(key, img)
 
     modified_img = img.copy()
     selected_box.display(modified_img)
     #cv2.imshow('img', modified_img)
+
+
+  if mode == 'cut':
+    start_time = start_of_cut/fps
+    end_time = '' if end_of_cut == -1 else str(end_of_cut/fps)
+    new_video_path = video_path[:-4] + '_cut' + video_path[-4:]
+    
+    # Cut video
+    ffmpeg_command = 'ffmpeg -ss %f -i %s -c copy -t %s %s' % (start_time, video_path, end_time, new_video_path)
+    os.system(ffmpeg_command)
+
+    # Delete old video
+    os.remove(video_path)
+
+    # Rename new video
+    os.rename(new_video_path, video_path)
 
   print('Exiting...')
   video_capture.release()
