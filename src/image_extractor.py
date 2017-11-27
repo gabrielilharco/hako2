@@ -286,13 +286,14 @@ if __name__ == '__main__':
     #cv2.imshow('img', modified_img)
 
 
-  if mode == 'cut':
+  if mode == 'cut' and (start_of_cut != 0 or end_of_cut != -1):
     start_time = start_of_cut/fps
-    end_time = '' if end_of_cut == -1 else str(end_of_cut/fps)
+    duration = '' if end_of_cut == -1 else '-t ' + str((end_of_cut-start_of_cut)/fps)
     new_video_path = video_path[:-4] + '_cut' + video_path[-4:]
     
     # Cut video
-    ffmpeg_command = 'ffmpeg -ss %f -i %s -c copy -t %s %s' % (start_time, video_path, end_time, new_video_path)
+    ffmpeg_command = 'ffmpeg -ss %f -i %s %s %s' % (start_time, video_path, duration, new_video_path)
+    print ('Running command: ' + ffmpeg_command)
     os.system(ffmpeg_command)
 
     # Delete old video
