@@ -12,7 +12,7 @@ root_dir = os.path.dirname(src_dir)
 data_dir = os.path.join(root_dir, 'data')
 models_dir = os.path.join(root_dir, 'models')
 
-cropped_dir = os.path.join(data_dir, 'cropped_videos')
+cropped_dir = os.path.join(data_dir, 'images')
 videos_dir = os.path.join(data_dir, 'videos')
 
 
@@ -30,7 +30,10 @@ def valid_face(x,y,w,h):
   if (w > 200 or h > 200):
     return False
 
-  if (y > 200):
+  if (y > 200 or y < 50):
+    return False
+
+  if (x > 250 or x < 100):
     return False
 
   return True
@@ -46,55 +49,61 @@ def face_haar_bbox(img):
   # There should be only one face
   for (x,y,w,h) in faces:
     if (valid_face(x, y, w, h)):
-      # print (x,y,w,h)
+      print (x,y,w,h)
       return True, (x,y,w,h)
 
-  # Did not find image
+  # Did not find imag
   return False, None
 
 
 def crop_video_and_save(in_video_file, out_video_file):
-  # cv2.namedWindow("resized_frame")
-  # cv2.setMouseCallback("resized_frame", click_handler)
+  # cv2.namedWindow("frame")
+  # cv2.setMouseCallback("frame", click_handler)
   inn = cv2.VideoCapture(in_video_file)
 
   # Define the codec and create VideoWriter object
-  fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+  # fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 
-  out = cv2.VideoWriter(out_video_file,fourcc, 20.0, (450,800),True)
+  # out = cv2.VideoWriter(out_video_file,fourcc, 20.0, (450,800),True)
 
   last_bbox = (200,180,200,200)
+  frame_count = 0
   while inn.isOpened():
+    frame_count += 1
     ret, img = inn.read()
 
-    if not ret:
-      break
+    if not ret: break
+    if frame_count % 5 != 0: continue
     
     img = cv2.resize(img, (450, 800))
     found, bbox = face_haar_bbox(img)
     if (found):
-      last_bbox = bbox
+      if ((bbox[0] - last_bbox[0])**2 + (bbox[1] - last_bbox[1])**2 < 10**2):
+        last_bbox = bbox
+      else:
+        bbox = last_bbox
     else:
       bbox = last_bbox
 
     # Face-to-body ratio crop
     (x,y,w,h) = bbox
     cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-    cropped_img =  img[max(1,y-h):y+(5*h)//2,max(1,x-2*w): x + 2*w]
+    cropped_img =  img[max(1,y-h):y + int(2.5*h),max(1,x- int(1.8*w)): x + int(2.3*w)]
     # cropped_img = img 
-    resized_img = cv2.resize(cropped_img, (450, 800))
+    resized_img = cv2.resize(cropped_img, (400, 400))
 
-    out.write(resized_img)
-    cv2.imshow('resized_frame',resized_img)
-    cv2.imshow('frame',img)
+    # out.write(resized_img)
+    cv2.imwrite(out_video_file + "_" + str(uuid.uuid4()) + ".png", resized_img)
+    # cv2.imshow('resized_frame',resized_img)
+    # cv2.imshow('frame',img)
 
     # key = cv2.waitKey() & 0xFF
-    # if cv2.waitKey() == 32:
+    # if key == 32:
       # break
     cv2.waitKey(1)
 
   inn.release()
-  out.release()
+  # out.release()
   cv2.destroyAllWindows()
 
 
@@ -115,9 +124,9 @@ def click_handler(event, x, y, flags, param):
     print (x, y)
 
 def test():
-  crop_videos_in_dir(videos_dir, symbol_name='aada')
-  # crop_video_and_save(os.path.join(videos_dir, 'aada', '1_1.mp4'),
-  #                     os.path.join(cropped_dir, 'aada', '1_1.mp4'))
+  crop_videos_in_dir(videos_dir, symbol_name='ajudar')
+  # crop_video_and_save(os.path.join(videos_dir, 'ajudar', '1_1.mp4'),
+  #                     os.path.join(cropped_dir, 'ajudar', '1_1.mp4'))
 
 
 if __name__ == '__main__':
