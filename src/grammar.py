@@ -17,8 +17,6 @@ grammar = {
 	'Sentenca_2': [
 		['Sujeito', 'Verbo_Transitivo_Atemporal', 'Objeto'],
 		['Objeto', 'Sujeito', 'Verbo_Transitivo_Atemporal'],
-		['Sujeito', 'Verbo_Intransitivo_Atemporal'],
-		['Verbo_Intransitivo_Atemporal', 'Sujeito'],
 	],
 	'Complemento': [
 		['Hoje'],
@@ -44,7 +42,6 @@ grammar = {
 	'Sujeito_1': [
 		['Homem'],
 		['Mulher'],
-		['Crianca'],
 	],
 	'Modificador_Sujeito': [
 		['Velh@'],
@@ -56,7 +53,8 @@ grammar = {
 		['Gord@'],
 		['Magr@'],
 		['Alt@'],
-		['Calm@']
+		['Calm@'],
+		['Crianca'],
 	],
 	'Verbo_Intransitivo_Temporal': [
 		['Estudar'],
@@ -72,9 +70,6 @@ grammar = {
 		['Chorar'],
 		['Rir'],
 		['Viajar'],
-	],
-	'Verbo_Intransitivo_Atemporal': [
-		['Crescer'],
 	],
 	'Verbo_Transitivo_Temporal': [
 		['Comprar'],
