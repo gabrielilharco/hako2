@@ -92,7 +92,7 @@ def crop_video_and_save(in_video_file, out_video_file, fallback_haar):
   
         cropped_img = img[max(0, int(top - 0.8 * h)):min(img.shape[0], int(bottom + 3 * h)),
                           max(0, int(left - 1.5 * w)):min(img.shape[1], int(right + 1.8 * w))]
-        print("CNN!")
+        # print("CNN!")
         # cv2.rectangle(img,
         #               (int(left - 1.5 * w), int(top - 0.8 * h)),
         #               (int(right + 1.8 * w), int(bottom + 3 * h)),
@@ -114,7 +114,7 @@ def crop_video_and_save(in_video_file, out_video_file, fallback_haar):
           #     (int(left - 2.2 * w), int(top - 0.8 * h)),
           #     (int(right + 2 * w), int(bottom + 3 * h)),
           #     (0, 255, 0), 2)
-          print("Haar!")
+          # print("Haar!")
           break
 
 
@@ -127,23 +127,16 @@ def crop_video_and_save(in_video_file, out_video_file, fallback_haar):
     # else:
     #   bbox = last_bbox
 
-    # Face-to-body ratio crop
-    # (x,y,w,h) = bbox
-    # cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-    # cropped_img =  img[max(1,y-h):y + int(2.5*h),max(1,x- int(1.8*w)): x + int(2.3*w)]
-    # cropped_img = img 
-
     resized_img = cv2.resize(cropped_img, (400, 400))
 
-    # out.write(resized_img)
     cv2.imwrite(out_video_file + "_" + str(uuid.uuid4()) + ".png", resized_img)
+
     # cv2.imshow('resized_frame',resized_img)
     # cv2.imshow('frame',cropped_img)
     # cv2.imshow('original',img)
-
     # key = cv2.waitKey() & 0xFF
     # if key == 32:
-    #   break
+      # break
     cv2.waitKey(1)
 
   inn.release()
@@ -158,6 +151,7 @@ def crop_videos_in_dir(dir, symbol_name, **kwargs):
     os.makedirs(cropped_video_dir)
 
   for video_file in glob.glob(video_dir + '/*.mp4'):
+    print ("Processing video: ", video_file)
     out_video = os.path.join(CROPPED_DIR, symbol_name, os.path.basename(video_file))
     crop_video_and_save(video_file, out_video, **kwargs)
 
@@ -168,27 +162,33 @@ def click_handler(event, x, y, flags, param):
   if event == cv2.EVENT_LBUTTONDOWN:
     print (x, y)
 
-def test():
-  crop_videos_in_dir(symbols_dir, symbol_name='casa')
+def test(**kwargs):
+  crop_videos_in_dir(VIDEOS_DIR, symbol_name='ajudar', **kwargs)
   # crop_video_and_save(os.path.join(videos_dir, 'ajudar', '6_19.mp4'),
   #                     os.path.join(cropped_dir, 'ajudar', '6_19.mp4'))
-###
+  #
 
-def main(symbols_dir, **kwargs):
+def main(**kwargs):
   # print(kwargs)
   for symbol in os.listdir(VIDEOS_DIR):
+    print("#####################")
+    print("Processing dir: ", symbol)
     crop_videos_in_dir(VIDEOS_DIR, symbol_name=symbol, **kwargs)
   
 
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument('--symbols-dir', type=str, default='aada')
+  parser.add_argument('--test', type=bool, required=False)
   parser.add_argument('--fallback-haar', type=bool, default=True, help="Fallback to Haar")
 
   args = parser.parse_args()
-  print (args)
-  
-  # TODO Iterate over all folder of list
-  # crop_videos_in_dir(os.path.join(VIDEOS_DIR, args.symbols_dir), sym)
-  main(**vars(args))
+
+  if (args.test):
+    args_dict = vars(args)
+    del args_dict['test']
+    test(**args_dict)
+  else:
+    args_dict = vars(args)
+    del args_dict['test']
+    main(**args_dict)
