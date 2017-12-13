@@ -119,6 +119,7 @@ grammar = {
 }
 
 terminals = Set()
+num_expansions = {}
 
 def populate_terminals():
 	terminals = Set()
@@ -128,6 +129,25 @@ def populate_terminals():
 				if word not in grammar:
 					terminals.add(word)
 	return terminals
+
+def calc_expansions(term):
+	if term in num_expansions:
+		return num_expansions[term]
+	if term in terminals:
+		num_expansions[term] = 1
+	else:
+		num_exp = 0
+		for sntc in grammar[term]:
+			curr = 1
+			for t in sntc:
+				curr *= calc_expansions(t)
+			num_exp += curr
+		num_expansions[term] = num_exp
+	return num_expansions[term]
+
+def count_expansions():
+	num_expansions = {}
+	calc_expansions('Sentenca')
 
 def generate_random_sentence():
 	sentence = ['Sentenca']
@@ -153,12 +173,13 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	terminals = populate_terminals()
-
+	count_expansions()
+	
   	if args.print_atoms:
   		for terminal in sorted(terminals):
 			print terminal
 		print '-----------------'
-		print'There are', len(terminals), 'terminals'
+		print 'There are', len(terminals), 'terminals'
 
 	for i in range(args.num_sentences):
 		generate_random_sentence()
