@@ -1,6 +1,7 @@
 import argparse
 from sets import Set
 import random
+import operator
 
 grammar = {
 	'Sentenca': [
@@ -152,7 +153,6 @@ def count_expansions():
 def analyze_stats(sentences):
 	counts = {}
 	for sentence in sentences:
-		print(sentence)
 		for element in sentence.split():
 			if element not in counts:
 				counts[element] = 1
@@ -160,11 +160,11 @@ def analyze_stats(sentences):
 				counts[element] += 1
 
 	# print stats
-	for key, val in counts.iteritems():
+	sorted_counts = sorted(counts.items(), key = operator.itemgetter(1))
+	for key, val in sorted_counts:
 		print "%5d %s" % (val, key)
 
 def generate_random_sentence(print_sentence = True):
-	count_expansions()
 	sentence = ['Sentenca']
 	idx = 0
 	while idx < len(sentence):
@@ -172,14 +172,6 @@ def generate_random_sentence(print_sentence = True):
 			idx += 1
 		else:
 			choices = grammar[sentence[idx]]
-			# num_expansions = []
-			# total = 0
-			# for choice in choices:
-			# 	count = 1
-			# 	for element in choice:
-			# 		count *= calc_expansions[element]
-			# 	num_expansions.append(count)
-			# 	total += count
 			choice = random.choice(choices)
 			sentence = sentence[:idx] + choice + sentence[idx+1:]
 	sentence = " ".join([word.upper() for word in sentence])
@@ -206,7 +198,7 @@ if __name__ == '__main__':
 
 	sentences = []
 	for i in range(args.num_sentences):
-		sentences.append(generate_random_sentence())
+		sentences.append(generate_random_sentence(False))
 
 	print('-----------')
 	analyze_stats(sentences)
