@@ -149,7 +149,22 @@ def count_expansions():
 	num_expansions = {}
 	calc_expansions('Sentenca')
 
-def generate_random_sentence():
+def analyze_stats(sentences):
+	counts = {}
+	for sentence in sentences:
+		print(sentence)
+		for element in sentence.split():
+			if element not in counts:
+				counts[element] = 1
+			else:
+				counts[element] += 1
+
+	# print stats
+	for key, val in counts.iteritems():
+		print "%5d %s" % (val, key)
+
+def generate_random_sentence(print_sentence = True):
+	count_expansions()
 	sentence = ['Sentenca']
 	idx = 0
 	while idx < len(sentence):
@@ -157,10 +172,19 @@ def generate_random_sentence():
 			idx += 1
 		else:
 			choices = grammar[sentence[idx]]
+			# num_expansions = []
+			# total = 0
+			# for choice in choices:
+			# 	count = 1
+			# 	for element in choice:
+			# 		count *= calc_expansions[element]
+			# 	num_expansions.append(count)
+			# 	total += count
 			choice = random.choice(choices)
 			sentence = sentence[:idx] + choice + sentence[idx+1:]
 	sentence = " ".join([word.upper() for word in sentence])
-	print sentence
+	if print_sentence:
+		print sentence
 	return sentence
 
 if __name__ == '__main__':
@@ -173,7 +197,6 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	terminals = populate_terminals()
-	count_expansions()
 	
   	if args.print_atoms:
   		for terminal in sorted(terminals):
@@ -181,5 +204,9 @@ if __name__ == '__main__':
 		print '-----------------'
 		print 'There are', len(terminals), 'terminals'
 
+	sentences = []
 	for i in range(args.num_sentences):
-		generate_random_sentence()
+		sentences.append(generate_random_sentence())
+
+	print('-----------')
+	analyze_stats(sentences)
