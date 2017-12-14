@@ -200,5 +200,5 @@ if __name__ == '__main__':
 	for i in range(args.num_sentences):
 		sentences.append(generate_random_sentence(False))
 
-	print('-----------')
-	analyze_stats(sentences)
+	for i in range(len(sentences)):
+		print "%d. %s" % (i+1, sentences[i])
