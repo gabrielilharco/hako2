@@ -185,6 +185,8 @@ if __name__ == '__main__':
                       help='Print atoms of the grammar')
   	parser.add_argument('--num_sentences', type=int, default=0,
                       help='The number of random sentences to generate.')
+  	parser.add_argument('--include_atoms', type=bool, default=False,
+  					  help='Wheather to include atoms or not.')
 
 	args = parser.parse_args()
 
@@ -200,5 +202,11 @@ if __name__ == '__main__':
 	for i in range(args.num_sentences):
 		sentences.append(generate_random_sentence(False))
 
+	offset = 0
+	if args.include_atoms:
+		for terminal in sorted(terminals):
+			print "%d. %s" % (offset+1, terminal.upper())
+			offset += 1
+
 	for i in range(len(sentences)):
-		print "%d. %s" % (i+1, sentences[i])
+		print "%d. %s" % (i+offset+1, sentences[i])
